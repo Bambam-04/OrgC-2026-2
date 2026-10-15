@@ -7,7 +7,7 @@ section .data
     nline db ln,0
     msg1 db ln,'Captura: ', 0
     msg2 db ln,'Cadena: ', 0
-    msg3 db ln,'MAYUS: ', 0
+    msg3 db ln,'ATOI: ', 0
     msg4 db ln,'MINUS: ', 0
     
 section .bss
@@ -20,33 +20,26 @@ _start:
     mov edx, msg1        
     call puts   
 
-    mov edx, cadena       ; EDX apunta a la variable donde guardaremos el texto
-    mov ax, lencadena     ; AX almacena el tamaño máximo (255)
+    mov edx, cadena
+    mov ax, lencadena
     call captura
 
     mov edx, msg2
     call puts
 
-    mov edx, cadena       ; EDX apunta a la cadena que acabamos de capturar
-    call puts             ; Imprime lo que el usuario escribió
+    mov edx, cadena
+    call puts
 
     ;ejercicio 2
     mov edx, msg3
     call puts
 
     mov edx, cadena
-    call mayus
+    call atoi
     mov edx, cadena
-    call puts
-    
-    ;ejercicio 3
-    mov edx, msg4
     call puts
 
-    mov edx, cadena
-    call minus
-    mov edx, cadena
-    call puts
+
     
 
     jmp .fin_programa  
@@ -117,61 +110,20 @@ _start:
         pop ax
         ret 
 
-    ;----------------------------------------------- 2- MAYUSCULAS -------------------------------------------
-    mayus:
-    pushad                      ; Guardamos el estado de los registros en la pila
-    mov ebx, edx                ; EBX guarda la dirección inicial de 'cadena'
-    mov esi, 0                  ; ESI será nuestro contador de caracteres (empieza en 0)
+;------------------------------------------------- 2 - ATOI ----------------------------------------------------
+    atoi:
+    pushad
+    mov ebx, edx
+    mov esi, 0
 
-    .bucle_mayus:
+    .bucle_atoi:
     mov al, byte [ebx + esi]
-    
-    cmp al, 0
-    je .fin_mayus
 
-    cmp al, 'a'
-    jl .siguiente
-
-    cmp al, 'z'
-    jg .siguiente
-
-    sub al, 32
-    mov [ebx + esi], al
-
-    .siguiente:
-    inc esi
-    jmp .bucle_mayus
+    mov cl, '5'
+    sub al, cl
+    jmp .fin_mayus
 
     .fin_mayus:
-    popad
-    ret
-    
-
-    ;----------------------------------------------- 3- MINUSCULAS -------------------------------------------
-    minus:
-    pushad                     ; Guardamos el estado de los registros en la pila
-    mov ebx, edx                ; EBX guarda la dirección inicial de 'cadena'
-    mov esi, 0                  ; ESI será nuestro contador de caracteres (empieza en 0)
-
-    .bucle_minus:
-    mov al, byte[ebx + esi]
-    
-    cmp al, 0
-    je .fin_minus
-
-    cmp al, 'A'
-    jl .siguiente
-
-    cmp al, 'Z'
-    jg .siguiente
-
-    add al, 32
-    mov [ebx + esi], al
-
-    .siguiente:
-    inc esi
-    jmp .bucle_minus
-
-    .fin_minus:
-    popad
+    pop esi
+    pop ebx
     ret
