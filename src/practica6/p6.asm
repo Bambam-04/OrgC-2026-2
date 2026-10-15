@@ -95,7 +95,7 @@ _start:
     ;borra caracter de la terminal 
     .es_backspace:
     cmp esi, 0                  ; ¿Hemos escrito al menos 1 letra?
-    jle .bucle_leer             ; Si ESI <= 0, no hay nada que borrar -> vuelve a pedir tecla
+    jz .bucle_leer             ; Si ESI <= 0, no hay nada que borrar -> vuelve a pedir tecla
 
     dec esi                     ; Retrocedemos 1 posición en el buffer de memoria
     call borrar                 ; Borra visualmente el caracter de la terminal
