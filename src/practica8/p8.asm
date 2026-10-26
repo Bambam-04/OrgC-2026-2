@@ -15,7 +15,7 @@ section .bss
     cadena  resb lencadena
 
 section .text
-    global _start         ; referencia para inicio de programa
+    global _start
 
 _start:
     mov edx, msg_ent
@@ -46,173 +46,180 @@ _start:
     mov edx, nl
     call puts
 
-    ; --- FIN DE PROGRAMA ---
-    .fin_programa:
-        mov eax, 1            ; Llamada sys_exit
-        xor ebx, ebx          ; return 0
-        int 0x80              ; Fin de programa
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
 
-    putchar:
-        push eax
-        push ebx
-        push ecx
-        push edx
+getch:
+    push ebx
+    push ecx
+    push edx
 
-        push eax
-        mov eax, 4
-        mov ebx, 1
-        mov ecx, esp
-        mov edx, 1
-        int 0x80
-        add esp, 4
+    call canonical_off
 
-        pop edx
-        pop ecx
-        pop ebx
-        pop eax
-        ret
+    push dword 0
+    mov eax, 3
+    mov ebx, 0
+    mov ecx, esp
+    mov edx, 1
+    int 0x80
 
-    puts:
-        ;SE USA putchar
-        push eax
-        push esi
+    call canonical_on
+    pop eax
 
-        mov esi, edx
-    .sigue:
-        mov al, [esi]
-        cmp al, 0
-        je .fin
-        call putchar
-        inc esi
-        jmp .sigue
-    .fin:
-        pop esi
-        pop eax
-        ret
+    pop edx
+    pop ecx
+    pop ebx
+    ret
 
-    getch:
-        push ebx
-        push ecx
-        push edx
+getche:
+    call getch
+    call putchar
+    ret
 
-        call canonical_off
-        push eax
-        mov eax, 3
-        mov ebx, 0
-        mov ecx, esp
-        mov edx, 1
-        int 0x80
-        pop eax
-        call canonical_on
+putchar:
+    push eax
+    push ebx
+    push ecx
+    push edx
 
-        pop edx
-        pop ecx
-        pop ebx
-        ret
+    push eax
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, esp
+    mov edx, 1
+    int 0x80
+    add esp, 4
 
-    getche:
-        call getch
-        call putchar
-        ret
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
 
-    borrar:
-        push eax
-        mov al, 8
-        call putchar
-        mov al, ' '
-        call putchar
-        mov al, 8
-        call putchar
-        pop eax
-        ret
+puts:
+    push eax
+    push ebx
+    push ecx
+    push edx
 
-    captura:
-        push ebx
-        push ecx
-        push esi
-        push eax
+    mov ecx, edx
+    xor edx, edx
+.largo:
+    cmp byte [ecx + edx], 0
+    je .escribir
+    inc edx
+    jmp .largo
 
-        mov esi, edx
-        xor ebx, ebx
-        movzx ecx, ax
-        cmp ecx, 1
-        jbe .fin
-        dec ecx
+.escribir:
+    mov eax, 4
+    mov ebx, 1
+    int 0x80
 
-    .ciclo:
-        call getch
-        cmp al, 10
-        je .fin
-        cmp al, 13
-        je .fin
-        cmp al, bskey
-        je .retro
-        cmp al, bskey2
-        je .retro
-        cmp al, 32
-        jb .ciclo
-        cmp ebx, ecx
-        jae .ciclo
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
 
-        mov [esi + ebx], al
-        inc ebx
-        call putchar
-        jmp .ciclo
+borrar:
+    push eax
+    mov al, 8
+    call putchar
+    mov al, ' '
+    call putchar
+    mov al, 8
+    call putchar
+    pop eax
+    ret
 
-    .retro:
-        test ebx, ebx
-        jz .ciclo
-        dec ebx
-        call borrar
-        jmp .ciclo
+captura:
+    push ebx
+    push ecx
+    push esi
+    push eax
 
-    .fin:
-        mov byte [esi + ebx], 0
+    mov esi, edx
+    xor ebx, ebx
+    movzx ecx, ax
+    cmp ecx, 1
+    jbe .fin
+    dec ecx
 
-        pop eax
-        pop esi
-        pop ecx
-        pop ebx
-        ret
+.ciclo:
+    call getch
+    cmp al, 10
+    je .fin
+    cmp al, 13
+    je .fin
+    cmp al, bskey
+    je .retro
+    cmp al, bskey2
+    je .retro
+    cmp al, 32
+    jb .ciclo
+    cmp ebx, ecx
+    jae .ciclo
 
-    mayusculas:
-        push eax
-        push edx
-    .ciclo:
-        mov al, [edx]
-        cmp al, 0
-        je .fin
-        cmp al, 'a'
-        jb .sig
-        cmp al, 'z'
-        ja .sig
-        sub al, 32
-        mov [edx], al
-    .sig:
-        inc edx
-        jmp .ciclo
-    .fin:
-        pop edx
-        pop eax
-        ret
+    mov [esi + ebx], al
+    inc ebx
+    call putchar
+    jmp .ciclo
 
-    minusculas:
-        push eax
-        push edx
-    .ciclo:
-        mov al, [edx]
-        cmp al, 0
-        je .fin
-        cmp al, 'A'
-        jb .sig
-        cmp al, 'Z'
-        ja .sig
-        add al, 32
-        mov [edx], al
-    .sig:
-        inc edx
-        jmp .ciclo
-    .fin:
-        pop edx
-        pop eax
-        ret
+.retro:
+    test ebx, ebx
+    jz .ciclo
+    dec ebx
+    call borrar
+    jmp .ciclo
+
+.fin:
+    mov byte [esi + ebx], 0
+
+    pop eax
+    pop esi
+    pop ecx
+    pop ebx
+    ret
+
+mayusculas:
+    push eax
+    push edx
+.ciclo:
+    mov al, [edx]
+    cmp al, 0
+    je .fin
+    cmp al, 'a'
+    jb .sig
+    cmp al, 'z'
+    ja .sig
+    sub al, 32
+    mov [edx], al
+.sig:
+    inc edx
+    jmp .ciclo
+.fin:
+    pop edx
+    pop eax
+    ret
+
+minusculas:
+    push eax
+    push edx
+.ciclo:
+    mov al, [edx]
+    cmp al, 0
+    je .fin
+    cmp al, 'A'
+    jb .sig
+    cmp al, 'Z'
+    ja .sig
+    add al, 32
+    mov [edx], al
+.sig:
+    inc edx
+    jmp .ciclo
+.fin:
+    pop edx
+    pop eax
+    ret
