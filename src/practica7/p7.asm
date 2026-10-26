@@ -14,6 +14,7 @@ section .data
 section .bss
     cadena resb lencadena
     buffer resb lenbuffer
+    numero resd 1
 
 section .text
     global _start         ; referencia para inicio de programa
@@ -43,7 +44,6 @@ _start:
     pop edx
     call puts
 
-    ;AÑADIRLE CANTIDAD
     add eax, 65
 
 
