@@ -13,11 +13,11 @@ global sumatoria, _sumatoria
     pop ebp
 %endmacro
 
-%macro WHILE 3
+%macro WHILE 2
     %push while
 %$inicio:
-    cmp %1, %3
-    j%-2 %$fin
+    cmp %1, %2
+    jge %$fin
 %endmacro
 
 %macro ENDWHILE 0
@@ -26,7 +26,6 @@ global sumatoria, _sumatoria
     %pop
 %endmacro
 
-; ---------------- int maximo(int *arr, int len) ----------------
 maximo:
 _maximo:
     PROTOENTRADA
@@ -36,7 +35,7 @@ _maximo:
     mov ecx, [ebp+12]       ; len
     mov eax, [ebx]          ; max = arr[0]
     mov esi, 1              ; i = 1
-    WHILE esi, l, ecx       ; while (i < len)
+    WHILE esi, ecx          ; while (i < len)
         mov edx, [ebx+esi*4]
         cmp edx, eax
         jle .no_cambia_max
@@ -49,7 +48,6 @@ _maximo:
     PROTOSALIDA
     ret
 
-; ---------------- int minimo(int *arr, int len) ----------------
 minimo:
 _minimo:
     PROTOENTRADA
@@ -59,7 +57,7 @@ _minimo:
     mov ecx, [ebp+12]       ; len
     mov eax, [ebx]          ; min = arr[0]
     mov esi, 1              ; i = 1
-    WHILE esi, l, ecx       ; while (i < len)
+    WHILE esi, ecx          ; while (i < len)
         mov edx, [ebx+esi*4]
         cmp edx, eax
         jge .no_cambia_min
@@ -72,7 +70,6 @@ _minimo:
     PROTOSALIDA
     ret
 
-; ---------------- int sumatoria(int *arr, int len) ----------------
 sumatoria:
 _sumatoria:
     PROTOENTRADA
@@ -82,7 +79,7 @@ _sumatoria:
     mov ecx, [ebp+12]       ; len
     xor eax, eax            ; suma = 0
     xor esi, esi            ; i = 0
-    WHILE esi, l, ecx       ; while (i < len)
+    WHILE esi, ecx          ; while (i < len)
         add eax, [ebx+esi*4]
         inc esi
     ENDWHILE

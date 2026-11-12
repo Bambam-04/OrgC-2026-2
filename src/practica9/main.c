@@ -12,11 +12,7 @@ int main(void)
     int n = 5;
     int i;
 
-    printf("\nValores del arreglo:\n");
-    for (i = 0; i < n; i++)
-        printf("arr[%d] = %d\n", i, arr[i]);
-
-    printf("\nMáximo:    %d\n", maximo(arr, n));
+    printf("Máximo:    %d\n", maximo(arr, n));
     printf("Mínimo:    %d\n", minimo(arr, n));
     printf("Sumatoria: %d\n", sumatoria(arr, n));
 
