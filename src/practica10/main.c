@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#define SENSORS 2
 
 #define N 0
 #define O 1
@@ -9,81 +10,88 @@
 #define D 4
 #define U 5
 
-extern void set_bit(unsigned char *value, unsigned char bit);
-extern unsigned char get_bit(unsigned char value, unsigned char bit);
+extern void _setbit(unsigned char*,unsigned char);
+extern unsigned char _getbit(unsigned char,unsigned char);
+void update_temp( int *temps);
+void update_flags( int *temps,int *last_temps, unsigned char *flags);
+void print_flag(unsigned char flags);
 
-void update_temp(int *temps)
+int main(void)
 {
-    temps[0] = temps[0] + rand() % 11 - 5;
-    temps[1] = temps[1] + rand() % 11 - 5;
+	srand(time(NULL));
+	int temps[SENSORS] = {25,25};
+	int last_temps[SENSORS] = {25,25};
+	unsigned char flags[SENSORS] = {0b00000001,0b00000001};
+	int opcion;
+
+	do
+	{
+		printf("\n\r SENSOR 1: ~ %d °C ",temps[0]);
+		print_flag(flags[0]);
+		printf("\n\r SENSOR 2: ~ %d °C ",temps[1]);
+		print_flag(flags[1]);
+
+		printf("\n\r [1] Actualizar");
+		printf("\n\r [2] Salir");
+		printf("\n\r Seleccionar opción: ");
+		scanf("%d",&opcion);
+
+		if(opcion == 1)
+		{
+			update_temp(temps);
+			update_flags(temps,last_temps,flags);
+		}
+	} while(opcion != 2);
+
+	printf("\n\rFIN DE PROGRAMA\n\n\r");
+	return 0;
 }
 
-void flags_sensor(int temp, int last, unsigned char *flag)
+void update_temp( int *temps)
 {
-    int dif = temp - last;
-    if (dif < 0) dif = -dif;
-
-    *flag = 0;
-
-    if (temp == last) set_bit(flag, N);
-    if (temp > last)  set_bit(flag, U);
-    if (temp < last)  set_bit(flag, D);
-
-    if (dif == 1) set_bit(flag, O);
-    if (dif == 2) set_bit(flag, T);
-    if (dif > 2)  set_bit(flag, G);
+	int min = -5,max = 5;
+	for(int i = 0 ; i < SENSORS; i++)
+	{
+		temps[i]+=rand() % (max - min + 1) + min;
+	}
 }
 
-void update_flags(int *temps, int *last_temps, unsigned char *flags)
+void update_flags( int *temps,int *last_temps, unsigned char *flags)
 {
-    flags_sensor(temps[0], last_temps[0], &flags[0]);
-    flags_sensor(temps[1], last_temps[1], &flags[1]);
+	for(int i = 0 ; i < SENSORS; i++)
+	{
+		int dif = temps[i] - last_temps[i];
+		if(dif < 0) dif = -dif;
 
-    last_temps[0] = temps[0];
-    last_temps[1] = temps[1];
+		flags[i] = 0;
+
+		if(temps[i] == last_temps[i]) _setbit(&flags[i],N);
+		if(temps[i] > last_temps[i])  _setbit(&flags[i],U);
+		if(temps[i] < last_temps[i])  _setbit(&flags[i],D);
+
+		if(dif == 1) _setbit(&flags[i],O);
+		if(dif == 2) _setbit(&flags[i],T);
+		if(dif > 2)  _setbit(&flags[i],G);
+
+		last_temps[i] = temps[i];
+	}
 }
 
-void mostrar(unsigned char flag)
+void print_flag(unsigned char flag)
 {
-    if (get_bit(flag, N)) printf("-");
+	if(_getbit(flag,N)) printf("-");
 
-    if (get_bit(flag, U)) {
-        if (get_bit(flag, O)) printf(">");
-        if (get_bit(flag, T)) printf(">>");
-        if (get_bit(flag, G)) printf(">>>");
-    }
+	if(_getbit(flag,U))
+	{
+		if(_getbit(flag,O)) printf(">");
+		if(_getbit(flag,T)) printf(">>");
+		if(_getbit(flag,G)) printf(">>>");
+	}
 
-    if (get_bit(flag, D)) {
-        if (get_bit(flag, O)) printf("<");
-        if (get_bit(flag, T)) printf("<<");
-        if (get_bit(flag, G)) printf("<<<");
-    }
-}
-
-int main()
-{
-    unsigned char banderas[2] = {1, 1};
-    int ultima_lectura[2] = {25, 25};
-    int tem_sensores[2] = {25, 25};
-    int opcion;
-
-    srand(time(NULL));
-
-    do {
-        printf("SENSOR 1: ~ %d °C ", tem_sensores[0]);
-        mostrar(banderas[0]);
-        printf("\nSENSOR 2: ~ %d °C ", tem_sensores[1]);
-        mostrar(banderas[1]);
-
-        printf("\n[1] Actualizar\n[2] Salir\nSeleccionar opción: ");
-        scanf("%d", &opcion);
-        printf("\n");
-
-        if (opcion == 1) {
-            update_temp(tem_sensores);
-            update_flags(tem_sensores, ultima_lectura, banderas);
-        }
-    } while (opcion != 2);
-
-    return 0;
+	if(_getbit(flag,D))
+	{
+		if(_getbit(flag,O)) printf("<");
+		if(_getbit(flag,T)) printf("<<");
+		if(_getbit(flag,G)) printf("<<<");
+	}
 }
