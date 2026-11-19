@@ -1,32 +1,28 @@
-%macro PROTOENTRADA 0
-	push ebp
-	mov ebp,esp
-%endmacro
+section .text
+global set_bit
+global get_bit
 
-%macro PROTOSALIDA 0
-	mov esp,ebp
-	pop ebp
-%endmacro
+set_bit:
+    push ebp
+    mov ebp, esp
+    mov edx, [ebp+8]
+    movzx ecx, byte [ebp+12]
+    and ecx, 7
+    mov eax, 1
+    shl eax, cl
+    or [edx], al
+    pop ebp
+    ret
 
-section	.text
-    global _setbit
-    global _getbit
+get_bit:
+    push ebp
+    mov ebp, esp
+    movzx eax, byte [ebp+8]
+    movzx ecx, byte [ebp+12]
+    and ecx, 7
+    shr eax, cl
+    and eax, 1
+    pop ebp
+    ret
 
-    _setbit:
-        PROTOENTRADA
-        mov eax,[ebp+8]
-        mov cl,[ebp+12]
-        mov dl,1
-        shl dl,cl
-        or [eax],dl
-		PROTOSALIDA
-		ret
-
-    _getbit:
-        PROTOENTRADA
-        movzx eax,byte [ebp+8]
-        mov cl,[ebp+12]
-        shr eax,cl
-        and eax,1
-		PROTOSALIDA
-		ret
+section .note.GNU-stack noalloc noexec nowrite progbits
